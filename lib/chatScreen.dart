@@ -32,7 +32,7 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
-  void sendMessage() {
+  void sendMessage() async {
     ChatMessage message = ChatMessage(text: _Textcontroller.text, sender: 'user');
     setState(() {
       _message.insert(0, message);
@@ -40,13 +40,20 @@ class _ChatScreenState extends State<ChatScreen> {
     sendMessagetoChatGpt(message.text);
 
     _Textcontroller.clear();
+
+    String response= await sendMessagetoChatGpt(message.text);
+    ChatMessage chatgpt= ChatMessage(text: response, sender: "ChatGPT");
+    setState(() {
+      _message.insert(0, chatgpt);
+    });
+
   }
-  void sendMessagetoChatGpt(String message) async{
+  Future <String> sendMessagetoChatGpt(String message) async{
     Uri uri= Uri.parse("https://api.openai.com/v1/chat/completions");
     Map<String , dynamic> body=
       {
   "model": "gpt-3.5-turbo",
-  "messages": [{"role": "system", "content": "You are a helpful assistant."}, 
+  "messages": [{"role": "system", "content": message}, 
       ],
       "max_tokens":500,
       };
@@ -58,6 +65,9 @@ class _ChatScreenState extends State<ChatScreen> {
       body: json.encode(body),
       );
       print(response.body);
+      Map<String , dynamic> parsedResponse= json.decode(response.body);
+      String reply= parsedResponse['choices'][0]['message']['content'];
+     return reply;
 
   }
 
@@ -76,36 +86,40 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Expanded(
               flex: 9,
-              child: Container(
-                child: ListView.builder(
-                  reverse: true,
-                  itemCount: _message.length,
-                  itemBuilder: (context, index) {
-                    return _message[index];
-                  },
-                ),
+              child: ListView.builder(
+                reverse: true,
+                itemCount: _message.length,
+                itemBuilder: (context, index) {
+                  return _message[index];
+                },
               ),
             ),
             Container(
               margin: EdgeInsets.only(right: 10.0, left: 10.0, top: 12.0, bottom: 8.0),
-              child: TextField(
-                onSubmitted: (value) => sendMessage(),
-                controller: _Textcontroller,
-                style: inputtextstyle,
-                decoration: InputDecoration(
-                  hintText: 'Enter your text here...',
-                  hintStyle: hinttextstyle,
-                  filled: true,
-                  fillColor: Color.fromARGB(255, 75, 71, 71),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      onSubmitted: (value) => sendMessage(),
+                      controller: _Textcontroller,
+                      style: inputtextstyle,
+                      decoration: InputDecoration(
+                        hintText: 'Enter your text here...',
+                        hintStyle: hinttextstyle,
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 75, 71, 71),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        suffixIcon: IconButton(
+                          onPressed: sendMessage,
+                          icon: Icon(Icons.send, color: Color.fromARGB(255, 17, 236, 25), size: 30.0),
+                        ),
+                      ),
+                    ),
                   ),
-                  suffixIcon: IconButton(
-                    onPressed: sendMessage,
-                    icon: Icon(Icons.send,color: Color.fromARGB(255, 17, 236, 25),size: 30.0,),
-                ),
+                ],
               ),
-            ),
             ),
           ],
         ),
