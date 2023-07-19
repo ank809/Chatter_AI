@@ -75,8 +75,8 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ChatGPT BOT'),
-        backgroundColor: const Color.fromARGB(255, 54, 51, 51),
+        title: Text('ChatGPT BOT', style: TextStyle(fontSize: 25.0),),
+        backgroundColor: Color.fromARGB(255, 74, 70, 70),
         centerTitle: true,
       ),
       body: Container(
